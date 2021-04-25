@@ -5,6 +5,9 @@ module Riscv151 #(
     parameter BAUD_RATE         = 115200,
     parameter BIOS_MEM_HEX_FILE = "bios151v3.mif"
 ) (
+    output [13:0] imem_addra_test,
+    output [31:0] imem_douta_test,
+
     input  clk,
     input  rst,
     input  FPGA_SERIAL_RX,
@@ -115,6 +118,7 @@ module Riscv151 #(
     wire uart_rx_data_out_valid;
     wire uart_rx_data_out_ready;
 
+    /*
     uart_receiver #(
         .CLOCK_FREQ(CPU_CLOCK_FREQ),
         .BAUD_RATE(BAUD_RATE)) uart_rx (
@@ -125,12 +129,14 @@ module Riscv151 #(
         .data_out_ready(uart_rx_data_out_ready), // input
         .serial_in(FPGA_SERIAL_RX)               // input
     );
+    */
 
     // UART Transmitter
     wire [7:0] uart_tx_data_in;
     wire uart_tx_data_in_valid;
     wire uart_tx_data_in_ready;
 
+    /*
     uart_transmitter #(
         .CLOCK_FREQ(CPU_CLOCK_FREQ),
         .BAUD_RATE(BAUD_RATE)) uart_tx (
@@ -141,8 +147,25 @@ module Riscv151 #(
         .data_in_ready(uart_tx_data_in_ready), // output
         .serial_out(FPGA_SERIAL_TX)            // output
     );
-
+    */
 
     // Construct your datapath, add as many modules as you want
-
+    // What I did
+    //REGISTER #(.N()) pc (.q(), .d(), .clk());
+    wire [31:0] pc_, pc_plus1;
+    REGISTER_R #(.N(32), .INIT(RESET_PC)) pc (.q(pc_), .d(pc_plus1), .rst(rst), .clk(clk));
+    assign pc_plus1 = pc_ + 1;
+    assign imem_addra = pc_;
+    //
+    assign rf_wa = imem_douta[11:7];
+    assign rf_ra1 = imem_douta[19:15];
+    assign rf_ra2 = imem_douta[24:20];
+    //
+    // add
+    assign rf_we = 1;
+    assign rf_wd = imem_douta[30] ? rf_rd1 - rf_rd2 : imem_douta[12] ? rf_rd1 << rf_ra2 : rf_rd1 + rf_rd2;
+    //
+    assign imem_addra_test = imem_addra;
+    assign imem_douta_test = imem_douta;
+    
 endmodule

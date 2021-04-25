@@ -37,6 +37,10 @@ module Riscv151_testbench();
     initial clk = 0;
     always #(CPU_CLOCK_PERIOD/2) clk = ~clk;
     wire [31:0] csr;
+    
+    // What I did
+    wire [13:0] imem_addra_test;
+    wire [31:0] imem_douta_test;
 
     // Init PC with 32'h1000_0000 -- address space of IMem
     // When PC is in IMem's address space, IMem is read-only
@@ -45,6 +49,10 @@ module Riscv151_testbench();
         .CPU_CLOCK_FREQ(CPU_CLOCK_FREQ),
         .RESET_PC(32'h1000_0000)
     ) CPU (
+        // What I did
+        .imem_addra_test(imem_addra_test),
+        .imem_douta_test(imem_douta_test),
+        
         .clk(clk),
         .rst(rst),
         .FPGA_SERIAL_RX(),
@@ -112,6 +120,10 @@ module Riscv151_testbench();
         else
             cycle <= 0;
     end
+    
+    // What I did
+    reg [31:0] cpu_rf_mem_fr_wa, cpu_rf_mem_fr_wa_in;
+    
 
     // Check result of RegFile
     // If the write_back (destination) register has correct value (matches "result"), test passed
@@ -125,7 +137,15 @@ module Riscv151_testbench();
             current_test_id   = current_test_id + 1;
             current_test_type = test_type;
             current_result    = result;
+            
+            // What I did
+            assign cpu_rf_mem_fr_wa = CPU.rf.mem[rf_wa];
+            
             while (CPU.rf.mem[rf_wa] !== result) begin
+            
+                // What I did
+                assign cpu_rf_mem_fr_wa_in = CPU.rf.mem[rf_wa];
+            
                 current_output = CPU.rf.mem[rf_wa];
                 @(posedge clk);
             end
