@@ -163,7 +163,7 @@ module Riscv151 #(
     //
     // add
     assign rf_we = 1;
-    assign rf_wd = imem_douta[30] ? rf_rd1 - rf_rd2 : imem_douta[12] ? rf_rd1 << rf_ra2 : rf_rd1 + rf_rd2;
+    assign rf_wd = imem_douta[30] ? rf_rd1 - rf_rd2 : imem_douta[13] ? (rf_rd1 < rf_rd2 ? 1 : 0) : imem_douta[12] ? rf_rd1 << rf_rd2[4:0] : rf_rd1 + rf_rd2;
     //
     assign imem_addra_test = imem_addra;
     assign imem_douta_test = imem_douta;
