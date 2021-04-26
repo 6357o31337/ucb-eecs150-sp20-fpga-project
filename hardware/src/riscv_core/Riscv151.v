@@ -163,7 +163,12 @@ module Riscv151 #(
     //
     // add
     assign rf_we = 1;
-    assign rf_wd = imem_douta[30] ? rf_rd1 - rf_rd2 : imem_douta[13] ? (rf_rd1 < rf_rd2 ? 1 : 0) : imem_douta[12] ? rf_rd1 << rf_rd2[4:0] : rf_rd1 + rf_rd2;
+    wire [31:0] rf_rd1_minus_rf_fd2 = rf_rd1 - rf_rd2;
+    wire signed [31:0] signed_rf_rd1 = rf_rd1;
+    wire signed [31:0] rf_rd1_sra_rf_rd2 = signed_rf_rd1 >>> rf_rd2[4:0];
+    wire [4:0]  imm = imem_douta[24:20];
+    wire signed [31:0] rf_rd1_srai_imm = signed_rf_rd1 >>> imm;
+    assign rf_wd = imem_douta[5] ? (imem_douta[30] ? (imem_douta[14]? (rf_rd1_sra_rf_rd2) : rf_rd1 - rf_rd2) : imem_douta[14] ? (imem_douta[13] ? (imem_douta[12] ? rf_rd1 & rf_rd2 : rf_rd1 | rf_rd2) : imem_douta[12] ? rf_rd1 >> rf_rd2[4:0] : rf_rd1^rf_rd2) : (imem_douta[13] ? (imem_douta[12] ? rf_rd1 < rf_rd2 : rf_rd1_minus_rf_fd2[31]) : imem_douta[12] ? rf_rd1 << rf_rd2[4:0] : rf_rd1 + rf_rd2)) : (imem_douta[14] ? (imem_douta[30] ? rf_rd1_srai_imm : rf_rd1 >> imem_douta[24:20]) : rf_rd1 << imem_douta[24:20]);
     //
     assign imem_addra_test = imem_addra;
     assign imem_douta_test = imem_douta;
